@@ -1,0 +1,46 @@
+package database;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Properties;
+
+public class DBConfig {
+    
+    public static Connection getConnection() {
+        Connection conn = null;
+            try {
+                Properties prop = loadProperties();
+                String dburl = prop.getProperty("dburl");
+                conn = DriverManager.getConnection(dburl, prop);
+            }
+            catch(SQLException e) {
+                throw new DBException(e.getMessage());
+            }
+        return conn;
+    }
+    
+    private static Properties loadProperties() {
+        try (FileInputStream fileIn = new FileInputStream("./properties/database.properties")) {
+            Properties prop = new Properties();
+            prop.load(fileIn);
+            return prop;
+        }
+        catch(IOException e) {
+            throw new DBException("ERROR: " + e.getMessage()); 
+        } 
+    }
+
+    public static void closeResultSet(ResultSet rs) {
+        try {
+            if(rs != null && !rs.isClosed()) 
+                rs.close();      
+        }
+        catch(SQLException e) {
+            throw new DBException(e.getMessage());
+        }
+    }
+}
